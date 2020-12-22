@@ -1,0 +1,6 @@
+hardware_interface:
+    loop_hz: 50 # hz
+    joints:
+      - l_wheel_joint
+      - r_wheel_joint
+
