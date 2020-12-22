@@ -42,7 +42,7 @@ void* canopen_checkloop(void* d){
 	while(ros::ok() && !interrupted){
 		CANOpen_timerLoop();
 		GYEMS_timerLoop();
-		usleep(100);
+		usleep(1000);
 	}
 
 	pthread_exit(NULL);

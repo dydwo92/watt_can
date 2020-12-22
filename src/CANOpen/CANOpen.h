@@ -16,6 +16,14 @@ typedef enum CO_Status{
   CO_ERROR,
 }CO_Status;
 
+typedef enum CO_NMT{
+  CO_RESET,
+  CO_COMMRESET,
+  CO_STOPPED,
+  CO_PREOP,
+  CO_OP
+}CO_NMT;
+
 #define CO_PDOSTR_LEN        10
 typedef struct CO_PDOStruct{
   void* data[CO_PDOSTR_LEN];
@@ -27,6 +35,8 @@ typedef struct CO_PDOStruct{
 // CANOpen Interface Functions
 /*****************************************************************************/
 extern CO_Status CANOpen_sendSync();
+
+extern CO_Status CANOpen_NMT(CO_NMT state);
 
 extern CO_Status CANOpen_writeOD_float(uint8_t nodeId, uint16_t Index, uint8_t subIndex, float data, uint16_t timeout);
 extern CO_Status CANOpen_writeOD_uint32(uint8_t nodeId, uint16_t Index, uint8_t subIndex, uint32_t data, uint16_t timeout);

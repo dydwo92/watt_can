@@ -13,8 +13,10 @@ add_message_files(
   FILES
   Gyemsreq.msg
   Wattreq.msg
+  Zlactestreq.msg
   Gyemsres.msg
   Wattres.msg
+  Zlactestres.msg
 )
 
 generate_messages(
@@ -38,10 +40,21 @@ add_executable(talker
   src/CANOpen/CANOpen.c
   src/GYEMS/gyems.c
 )
-
 add_dependencies(talker ${PROJECT_NAME}_generate_messages_cpp)
-
 target_link_libraries(talker ${catkin_LIBRARIES})
 target_link_libraries(talker ${CMAKE_THREAD_LIBS_INIT})
 install(TARGETS talker
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+
+
+add_executable(zlac_tester
+  src/zlac_tester.cpp
+  src/CANOpen/CANOpen_hw_appl.c
+  src/CANOpen/CANOpen.c
+)
+add_dependencies(zlac_tester ${PROJECT_NAME}_generate_messages_cpp)
+target_link_libraries(zlac_tester ${catkin_LIBRARIES})
+target_link_libraries(zlac_tester ${CMAKE_THREAD_LIBS_INIT})
+install(TARGETS zlac_tester
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

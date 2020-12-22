@@ -24,6 +24,48 @@ CO_Status CANOpen_sendSync(){
   return CO_OK;
 }
 
+CO_Status CANOpen_NMT(CO_NMT state){
+
+  uint8_t data[8];
+  uint8_t len;
+
+  switch(state){
+    case CO_RESET :
+    data[0] = 0x81;
+    data[1] = 0x00;
+    len = 2;
+    break;
+
+    case CO_COMMRESET :
+    data[0] = 0x82;
+    data[1] = 0x00;
+    len = 2;
+    break;
+
+    case CO_STOPPED :
+    data[0] = 0x02;
+    data[1] = 0x00;
+    len = 2;
+    break;
+
+    case CO_PREOP :
+    data[0] = 0x80;
+    data[1] = 0x00;
+    len = 2;
+    break;
+
+    case CO_OP :
+    data[0] = 0x01;
+    data[1] = 0x00;
+    len = 2;
+    break;
+  }
+
+  CANOpen_sendFrame(0x00, data, len);
+
+  return CO_OK;
+}
+
 CO_Status CANOpen_writeOD(uint8_t nodeId,
                    uint16_t Index,
                    uint8_t subIndex,
