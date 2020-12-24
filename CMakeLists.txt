@@ -14,11 +14,12 @@ find_package(Threads REQUIRED)
 add_message_files(
   FILES
   Gyemsreq.msg
-  Wattreq.msg
-  Zlactestreq.msg
   Gyemsres.msg
-  Wattres.msg
+  Zlactestreq.msg
   Zlactestres.msg
+  Innfosreq.msg
+  Wattreq.msg
+  Wattres.msg
 )
 
 generate_messages(
@@ -62,7 +63,17 @@ target_link_libraries(zlac_tester ${catkin_LIBRARIES})
 target_link_libraries(zlac_tester ${CMAKE_THREAD_LIBS_INIT})
 install(TARGETS zlac_tester
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-
+  
+## innfos_tester node
+add_executable(innfos_tester
+  src/innfos_tester.cpp
+)
+add_dependencies(innfos_tester ${PROJECT_NAME}_generate_messages_cpp)
+target_link_libraries(innfos_tester ${catkin_LIBRARIES})
+target_link_libraries(innfos_tester ${CMAKE_THREAD_LIBS_INIT})
+install(TARGETS innfos_tester
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+  
 ## zlac8015_canopen node
 add_executable(zlac8015_driver
   src/k3_mobile_hw_node.cpp

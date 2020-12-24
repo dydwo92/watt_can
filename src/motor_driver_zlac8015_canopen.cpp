@@ -268,9 +268,8 @@ void MotorDriverZLAC8015CANOpenInterface::read(const ros::Time& time, const ros:
     joint_pos_[0] = m1_position_output / 4096.0 * 2.0 * M_PI;
     joint_pos_[1] = -m2_position_output / 4096.0 * 2.0 * M_PI;
 
-    //printf("%d\t%d\t%d\t%d\n", m1_speed_output, m2_speed_output, m1_position_output, m2_position_output);
-    //printf("%f\t%f\t%f\t%f\n", joint_vel_[0], joint_vel_[1], joint_pos_[0], joint_pos_[1]);
-
+    printf("%d\t%d\t%d\t%d\n", m1_speed_output, m2_speed_output, m1_position_output, m2_position_output);
+    
     /*
 
     current_enc[0] = m1_position_output;

@@ -8,7 +8,7 @@ class ControlNode
         ControlNode(ros::NodeHandle& nh, ros::NodeHandle& pnh)
         {
             double control_frequency = 0.0;
-            pnh.param<double>("rate", control_frequency, 50.0);
+            pnh.param<double>("rate", control_frequency, 20.0);
 
             robot_hw = boost::make_shared<MotorDriverZLAC8015CANOpenInterface>();
             assert(robot_hw->init(nh, pnh));
