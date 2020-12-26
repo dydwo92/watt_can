@@ -1,6 +1,6 @@
 #include "ros/ros.h"
 #include "watt_can/Innfosreq.h"
-#include "watt_can/Wattres.h"
+#include "watt_can/Innfos6res.h"
 
 #include <sstream>
 
@@ -18,48 +18,17 @@
 #include <linux/can.h>
 #include <linux/can/raw.h>
 
+#include "innfos.h"
 
-#define M1_ID	0x02
-#define M2_ID	0x5A
-
-#define IQ24			16777216.0f		//2^24
+#define ID_BASE	0xC0
+#define NUM_MOTOR	6
 
 int s_can; // Global socketCAN file descriptor
-uint8_t can_tx[8];
 
 static int interrupted;
 
 void sigint_handler(int sig){
 	interrupted = 1;
-}
-
-void CAN_sendFrame(uint16_t cobID, uint8_t* data, uint8_t len){
-
-  /* USER CODE BEGIN 1 */
-
-  static struct can_frame frame;
-
-  static struct timeval timeout;
-  static fd_set set;
-  static int rv;
-
-  frame.can_id = cobID;
-  frame.can_dlc = len;
-  memcpy(frame.data, data, len);
-
-  FD_ZERO(&set);
-  FD_SET(s_can, &set);
-
-  timeout.tv_sec = 0;
-  timeout.tv_usec = 100000;
-
-  rv = select(s_can + 1, NULL, &set, NULL, &timeout);
-  if(rv >= 0 && FD_ISSET(s_can, &set)){
-	  write(s_can, &frame, sizeof(frame));
-  }
-
-  /* USER CODE END 1 */
-
 }
 
 /********************************************************************/
@@ -68,6 +37,7 @@ void CAN_sendFrame(uint16_t cobID, uint8_t* data, uint8_t len){
 void* canopen_checkloop(void* d){
 
 	while(ros::ok() && !interrupted){
+		INNFOS_timerLoop();
 		usleep(1000);
 	}
 
@@ -95,9 +65,8 @@ void* canopen_rxloop(void* d){
 	    if(rv > 0){
 	        nbytes = read(s_can, &frame, sizeof(frame));
 
-	        // Check frame is CANOpen or GYEMS
-	        //if((frame.can_id & 0x140) == 0x140) GYEMS_addRxBuffer(frame.can_id, frame.data);
- 	        //else CANOpen_addRxBuffer(frame.can_id, frame.data);
+	        // Add INNFOS response
+	        INNFOS_addRxBuffer(frame.can_id, frame.data);
 	    }
 	}
 
@@ -109,36 +78,23 @@ void* canopen_rxloop(void* d){
 // ROS subscriber callback
 /********************************************************************/
 static ros::Publisher *pub_instance;
-static watt_can::Wattres pub_data;
-
+static watt_can::Innfos6res pub_data;
+static INNFOS_REPLY reply[NUM_MOTOR];
 void chatterCallback(const watt_can::Innfosreq::ConstPtr& msg)
 {
 	float temp;
 	int32_t temp32;
+	int i;
 
-	temp = msg->m1_position * IQ24;
-	//temp /= 6000.0f;
-	temp /= 360.0f;
-	temp32 = (int32_t)temp;
-	can_tx[0] = 0x0A;
-	can_tx[1] = (uint8_t)(temp32 >> 24);
-	can_tx[2] = (uint8_t)(temp32 >> 16);
-	can_tx[3] = (uint8_t)(temp32 >> 8);
-	can_tx[4] = (uint8_t)temp32;
-	CAN_sendFrame(M1_ID, can_tx, 5);
-
-
-	temp = msg->m2_position * IQ24;
-	temp /= 360.0f;
-	//temp /= 6000.0f;
-	temp32 = (int32_t)temp;
-	printf("%d\n", temp32);
-	can_tx[0] = 0x0A;
-	can_tx[1] = (uint8_t)(temp32 >> 24);
-	can_tx[2] = (uint8_t)(temp32 >> 16);
-	can_tx[3] = (uint8_t)(temp32 >> 8);
-	can_tx[4] = (uint8_t)temp32;
-	CAN_sendFrame(M2_ID, can_tx, 5);
+	for(i = 0; i < NUM_MOTOR; i++){
+		INNFOS_posCmd(reply + i, ID_BASE + i, msg->position[i], 100);
+		pub_data.m[i].Speed = reply[i].Speed;
+		pub_data.m[i].Position = reply[i].Position;
+		pub_data.m[i].Current = reply[i].Current;
+		pub_data.m[i].Voltage = reply[i].Voltage;
+		pub_data.m[i].m_temp = reply[i].m_temp;
+		pub_data.m[i].d_temp = reply[i].d_temp;
+	}
 
 	if(pub_instance){
 		pub_instance->publish(pub_data);
@@ -166,7 +122,7 @@ int main(int argc, char **argv){
 	ros::NodeHandle n;
 
 	ros::Subscriber sub = n.subscribe("request_innfos", 1000, chatterCallback);
-	ros::Publisher pub = n.advertise<watt_can::Wattres>("response", 1000);
+	ros::Publisher pub = n.advertise<watt_can::Innfos6res>("response_innfos", 1000);
 	pub_instance = &pub;
 
 	// Get socketCAN ----------------------------------------------------->
@@ -230,14 +186,8 @@ int main(int argc, char **argv){
     // Initial CAN Batch ------------------------------------------------->
 
     // [[ Innfos motor to position mode ]]
-    can_tx[0] = 0x2A; can_tx[1] = 0x01; CAN_sendFrame(M1_ID, can_tx, 2); // SCA enable
-    sleep(1);
-    can_tx[0] = 0x07; can_tx[1] = 0x06; CAN_sendFrame(M1_ID, can_tx, 2); // Select usage mode [ position loop ]
-    sleep(1);
-    can_tx[0] = 0x2A; can_tx[1] = 0x01; CAN_sendFrame(M2_ID, can_tx, 2); // SCA enable
-    sleep(1);
-    can_tx[0] = 0x07; can_tx[1] = 0x06; CAN_sendFrame(M2_ID, can_tx, 2); // Select usage mode [ position loop ]
-    sleep(1);
+    int i;
+    for(i = 0; i < NUM_MOTOR; i++) INNFOS_Init(ID_BASE + i);
 
 
     // Initial CAN Batch <-------------------------------------------------
@@ -248,8 +198,7 @@ int main(int argc, char **argv){
 		ros::spinOnce();
 	}
 
-	can_tx[0] = 0x2A; can_tx[1] = 0x00; CAN_sendFrame(M1_ID, can_tx, 2); // SCA disable
-	can_tx[0] = 0x2A; can_tx[1] = 0x00; CAN_sendFrame(M2_ID, can_tx, 2); // SCA disable
+	for(i = 0; i < NUM_MOTOR; i++) INNFOS_deInit(ID_BASE + i);
 
 	int status;
 	pthread_join(p_thread[0], (void **)&status);

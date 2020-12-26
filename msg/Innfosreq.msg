@@ -1,2 +1,1 @@
-float32 m1_position
-float32 m2_position
+float32[6] position # rad

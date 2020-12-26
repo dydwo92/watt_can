@@ -18,6 +18,8 @@ add_message_files(
   Zlactestreq.msg
   Zlactestres.msg
   Innfosreq.msg
+  Innfosres.msg
+  Innfos6res.msg
   Wattreq.msg
   Wattres.msg
 )
@@ -36,6 +38,7 @@ include_directories(include
   include
   src/CANOpen
   src/GYEMS
+  src/INNFOS
 )
 
 ## taker node 
@@ -67,6 +70,7 @@ install(TARGETS zlac_tester
 ## innfos_tester node
 add_executable(innfos_tester
   src/innfos_tester.cpp
+  src/INNFOS/innfos.c
 )
 add_dependencies(innfos_tester ${PROJECT_NAME}_generate_messages_cpp)
 target_link_libraries(innfos_tester ${catkin_LIBRARIES})
