@@ -7,6 +7,13 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   message_generation
+  ros_control_boilerplate
+  rosparam_shortcuts
+  roslib
+  std_srvs
+  geometry_msgs
+  sensor_msgs
+  tf_conversions
 )
 
 find_package(Threads REQUIRED)
@@ -87,3 +94,13 @@ add_executable(zlac8015_driver
 )
 target_link_libraries(zlac8015_driver ${catkin_LIBRARIES})
 target_link_libraries(zlac8015_driver ${CMAKE_THREAD_LIBS_INIT})
+
+
+## innfos node
+add_executable(innfos_driver
+  src/innfos_hw_node.cpp
+  src/motor_driver_innfos_canopen.cpp
+  src/INNFOS/innfos.c
+)
+target_link_libraries(innfos_driver ${catkin_LIBRARIES})
+target_link_libraries(innfos_driver ${CMAKE_THREAD_LIBS_INIT})

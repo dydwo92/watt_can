@@ -18,6 +18,9 @@ extern "C"
 
 #define M_PI2			6.283185307f
 
+#define ID_BASE	0xC0
+#define NUM_MOTOR	6
+
 typedef struct _INNFOS_REPLY{
 	float m_temp; // C
 	float d_temp; // C
