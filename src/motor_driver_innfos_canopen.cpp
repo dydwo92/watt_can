@@ -21,7 +21,7 @@ void sigint_handler(int sig){
 /********************************************************************/
 void* canopen_checkloop(void* d){
 
-	while(ros::ok() && !interrupted){
+	while(ros::ok()){
 		INNFOS_timerLoop();
 		usleep(1000);
 	}
@@ -39,7 +39,7 @@ void* canopen_rxloop(void* d){
     int rv;
     int nbytes;
 
-	while(ros::ok() && !interrupted){
+	while(ros::ok()){
 	    FD_ZERO(&set);
 	    FD_SET(s_can, &set);
 
@@ -164,7 +164,7 @@ namespace xarm_control
 
 		// Get socketCAN <-----------------------------------------------------
 
-	    signal(SIGINT, sigint_handler);
+	    //signal(SIGINT, sigint_handler);
 
 		// Create CAN related threads ---------------------------------------->
 	    int thr_id;
@@ -245,7 +245,7 @@ namespace xarm_control
 		//xarm.setServoJ(position_cmd_float_);
 		int i;
 		for(i = 0; i < NUM_MOTOR; i++){
-			INNFOS_posCmd(reply + i, ID_BASE + i, position_cmd_float_[i], 100);
+			INNFOS_posCmd(reply + i, ID_BASE + i, position_cmd_float_[i], 200);
 		}
 
 		initial_write_ = false;

@@ -18,6 +18,9 @@ extern "C"
 
 #define M_PI2			6.283185307f
 
+#define BUFLEN            40
+#define RX_TIMEOUT        1000
+
 #define ID_BASE	0xC0
 #define NUM_MOTOR	6
 

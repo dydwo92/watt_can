@@ -87,7 +87,7 @@ void chatterCallback(const watt_can::Innfosreq::ConstPtr& msg)
 	int i;
 
 	for(i = 0; i < NUM_MOTOR; i++){
-		INNFOS_posCmd(reply + i, ID_BASE + i, msg->position[i], 100);
+		INNFOS_posCmd(reply + i, ID_BASE + i, msg->position[i], 200);
 		pub_data.m[i].Speed = reply[i].Speed;
 		pub_data.m[i].Position = reply[i].Position;
 		pub_data.m[i].Current = reply[i].Current;

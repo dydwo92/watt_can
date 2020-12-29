@@ -1,7 +1,7 @@
 
 <launch>
 
-  <arg name="run_demo_traj" default="false"/>
+  <arg name="run_demo_traj" default="true"/>
   <arg name="namespace" default="xarm"/>
   
   <arg name="model" default="$(find watt_can)/urdf/example_arm.urdf.xacro"/>
