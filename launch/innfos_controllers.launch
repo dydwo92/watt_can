@@ -3,24 +3,18 @@
 
   <arg name="run_demo_traj" default="false"/>
   <arg name="namespace" default="xarm"/>
+  
+  <arg name="model" default="$(find watt_can)/urdf/example_arm.urdf.xacro"/>
+  <param name="robot_description" command="$(find xacro)/xacro.py $(arg model)" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" >
+  </node>
+
+  <!-- Model and state publisher -->
+
   <rosparam file="$(find watt_can)/config/innfos/hardware.yaml" command="load"/>
-
   <node name="innfos_driver" pkg="watt_can" type="innfos_driver" output="screen" />
-  <!-- <rosparam file="$(find watt_can)/config/innfos/position_controllers.yaml" command="load"/> -->
-  <!-- <rosparam file="$(find watt_can)/config/innfos/traj_controllers.yaml" command="load"/> -->
-  <!-- <node name="position_controller_spawner"
-    pkg="controller_manager"
-    type="spawner"
-    respawn="true"
-    output="screen"
-    args="joint1_position_controller joint2_position_controller
-          joint3_position_controller joint4_position_controller
-          joint5_position_controller joint6_position_controller
-          joint_state_controller"/>
-   -->
 
-
-
+  <!-- true : load the trajectory controllers -->
   <rosparam unless="$(arg run_demo_traj)" file="$(find watt_can)/config/innfos/traj_controllers.yaml" command="load"/>
   <node unless="$(arg run_demo_traj)"
     name="traj_controller_spawner"
@@ -30,7 +24,7 @@
     output="screen"
     args="spawn xarm6_traj_controller joint_state_controller"/>
 
-  <!-- run_demo: load the position controllers -->
+  <!-- false : load the position controllers -->
   <rosparam if="$(arg run_demo_traj)"
     file="$(find watt_can)/config/innfos/position_controllers.yaml" command="load"/>
   <node if="$(arg run_demo_traj)" name="position_controller_spawner"
